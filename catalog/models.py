@@ -12,6 +12,10 @@ class Topic(models.Model):
 class Redactor(AbstractUser):
     years_of_experience = models.PositiveIntegerField(default=0)
 
+    class Meta:
+        verbose_name = "Redactor"
+        verbose_name_plural = "Redactors"
+
     def __str__(self):
         return self.username
     
