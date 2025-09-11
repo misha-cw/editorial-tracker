@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+  <main id="main-content" class="px-3 py-3 flex-fill">
+    <!-- Welcome block -->
+    <section class="mb-5 text-center">
+      <h1 class="mb-3 fw-bold">Welcome back, {{ user.username }}!</h1>
+      <p class="lead text-muted">Here’s your quick overview and shortcuts.</p>
+      <div class="d-flex justify-content-center flex-wrap gap-3 mt-4">
+        <a href="#" class="btn btn-outline-primary btn-md rounded-pill">➕ Add Newspaper</a>
+        <a href="#" class="btn btn-outline-primary btn-md rounded-pill">📑 View Topics</a>
+        <a href="#" class="btn btn-outline-primary btn-md rounded-pill">👥 Redactors</a>
+      </div>
+    </section>
+    <!-- Overview cards -->
+    <section>
+      <div class="row text-center g-4">
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card h-100 border-0 rounded-4 py-4 shadow-lg bg-primary text-white">
+            <div class="card-body">
+              <i class="fas fa-newspaper fa-3x mb-4"></i>
+              <h5 class="card-title fw-bold">Newspapers</h5>
+              <p class="card-text h3">{{ num_newspapers }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card h-100 border-0 rounded-4 py-4 shadow-lg bg-primary text-white">
+            <div class="card-body">
+              <i class="fas fa-user-edit fa-3x mb-4"></i>
+              <h5 class="card-title fw-bold">Redactors</h5>
+              <p class="card-text h3">{{ num_redactors }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card h-100 border-0 rounded-4 py-4 shadow-lg bg-primary text-white">
+            <div class="card-body">
+              <i class="fas fa-tags fa-3x mb-4"></i>
+              <h5 class="card-title fw-bold">Topics</h5>
+              <p class="card-text h3">{{ num_topics }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+{% endblock content %}
