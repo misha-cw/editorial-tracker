@@ -24,6 +24,7 @@ class TopicListView(generic.ListView):
     template_name = "catalog/topic_list.html"
     context_object_name = "topics"
     paginate_by = 15
+    ordering = ["name"]
 
 
 class TopicCreateView(generic.CreateView):
