@@ -24,4 +24,24 @@ class TopicListView(generic.ListView):
     template_name = "catalog/topic_list.html"
     context_object_name = "topics"
     paginate_by = 15
+
+
+class TopicCreateView(generic.CreateView):
+    model = Topic
+    fields = ["name"]
+    template_name = "catalog/topic_form.html"
+    success_url = reverse_lazy("catalog:topic-list")
+
+
+class TopicUpdateView(generic.UpdateView):
+    model = Topic
+    fields = ["name"]
+    template_name = "catalog/topic_form.html"
+    success_url = reverse_lazy("catalog:topic-list")
+
+
+class TopicDeleteView(generic.DeleteView):
+    model = Topic
+    template_name = "catalog/topic_confirm_delete.html"
+    success_url = reverse_lazy("catalog:topic-list")
     
