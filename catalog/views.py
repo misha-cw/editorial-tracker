@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.views import generic
 from django.urls import reverse_lazy
 
-from .models import Newspaper, Topic, Redactor
+from catalog.models import Newspaper, Topic, Redactor
+from catalog.forms import RedactorCreateForm , RedactorUpdateForm
 
 def index(request):
 
@@ -45,4 +46,32 @@ class TopicDeleteView(generic.DeleteView):
     model = Topic
     template_name = "catalog/topic_confirm_delete.html"
     success_url = reverse_lazy("catalog:topic-list")
+
+
+class RedactorListView(generic.ListView):
+    model = Redactor
+    template_name = "catalog/redactor_list.html"
+    context_object_name = "redactors"
+    paginate_by = 15
+    ordering = ["username"]
+
+
+class RedactorCreateView(generic.CreateView):
+    model = Redactor
+    form_class = RedactorCreateForm
+    template_name = "catalog/redactor_form.html"
+    success_url = reverse_lazy("catalog:redactor-list")
+
+
+class RedactorUpdateView(generic.UpdateView):
+    model = Redactor
+    form_class = RedactorUpdateForm
+    template_name = "catalog/redactor_form.html"
+    success_url = reverse_lazy("catalog:redactor-list")
+
+
+class RedactorDeleteView(generic.DeleteView):
+    model = Redactor
+    template_name = "catalog/redactor_confirm_delete.html"
+    success_url = reverse_lazy("catalog:redactor-list")
     

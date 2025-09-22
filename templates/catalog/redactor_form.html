@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load crispy_forms_filters %}
+{% block content %}
+  <section class="py-5">
+    <div class="container">
+      <div class="card shadow-sm">
+        <div class="card-header">
+          <h5 class="mb-0">{{ object|yesno:"Update,Create" }} Redactor</h5>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-success">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock content %}
