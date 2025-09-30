@@ -1,7 +1,8 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
-from catalog.models import Redactor
+from catalog.models import Redactor, Newspaper, Topic
 
 
 class RedactorCreateForm(UserCreationForm):
@@ -41,4 +42,30 @@ class RedactorUpdateForm(forms.ModelForm):
         if years is not None and (years < 0 or years > 100):
             raise forms.ValidationError("Years of experience must be between 0 and 100.")
         return years
+    
+
+class NewspaperForm(forms.ModelForm):
+    publishers = forms.ModelMultipleChoiceField(
+        queryset=get_user_model().objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+    )
+    topics = forms.ModelMultipleChoiceField(
+        queryset=Topic.objects.all(),  
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+
+    class Meta:
+        model = Newspaper
+        fields = [
+            "title",
+            "content",
+            "topics",
+            "publishers",
+        ]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "content": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
+        }
+
     

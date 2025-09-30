@@ -9,6 +9,11 @@ from .views import (
     RedactorCreateView,
     RedactorUpdateView,
     RedactorDeleteView,
+    NewspaperListView,
+    NewspaperDetailView,
+    NewspaperCreateView,
+    NewspaperUpdateView,
+    NewspaperDeleteView,
 )
 
 app_name = "catalog"
@@ -23,4 +28,9 @@ urlpatterns = [
     path("redactors/create/", RedactorCreateView.as_view(), name="redactor-create"),  # Create new redactor
     path("redactors/<int:pk>/update/", RedactorUpdateView.as_view(), name="redactor-update"),  # Update redactor
     path("redactors/<int:pk>/delete/", RedactorDeleteView.as_view(), name="redactor-delete"),  # Delete redactor
+    path("newspapers/", NewspaperListView.as_view(), name="newspaper-list"),  # Newspapers list
+    path("newspapers/<int:pk>/", NewspaperDetailView.as_view(), name="newspaper-detail"),  # Newspaper detail
+    path("newspapers/create/", NewspaperCreateView.as_view(), name="newspaper-create"),  # Create new newspaper
+    path("newspapers/<int:pk>/update/", NewspaperUpdateView.as_view(), name="newspaper-update"),  # Update newspaper
+    path("newspapers/<int:pk>/delete/", NewspaperDeleteView.as_view(), name="newspaper-delete"),  # Delete newspaper
 ]

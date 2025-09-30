@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h5 class="mb-0 text-danger">Delete Newspaper</h5>
+      </div>
+      <div class="card-body">
+        <p>Are you sure you want to delete the newspaper "<strong>{{ object.username }}</strong>"?</p>
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Yes, Delete</button>
+          <a href="{% url 'catalog:newspaper-list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}

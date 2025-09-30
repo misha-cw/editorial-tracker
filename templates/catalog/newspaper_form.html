@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="py-5">
+    <div class="card shadow-sm mx-auto">
+      <div class="card-body">
+        <h2 class="card-title mb-4 text-center">{{ object|yesno:"Update,Create" }} Newspaper</h2>
+        <form method="post">
+          {% csrf_token %}
+          <!-- Title -->
+          <div class="mb-3">
+            {{ form.title.label_tag }}
+            {{ form.title }}
+            {{ form.title.errors }}
+          </div>
+          <!-- Content -->
+          <div class="mb-3">
+            {{ form.content.label_tag }}
+            {{ form.content }}
+            {{ form.content.errors }}
+          </div>
+          <!-- Published date -->
+          <div class="mb-3">
+            {{ form.published_date.label_tag }}
+            {{ form.published_date }}
+            {{ form.published_date.errors }}
+          </div>
+          <!-- Topics -->
+          <div class="mb-3">
+            <div class="accordion" id="topicsAccordion">
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="headingTopics">
+                  <button class="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#collapseTopics"
+                          aria-expanded="false"
+                          aria-controls="collapseTopics">Select topics</button>
+                </h2>
+                <div id="collapseTopics"
+                     class="accordion-collapse collapse"
+                     aria-labelledby="headingTopics"
+                     data-bs-parent="#topicsAccordion">
+                  <div class="accordion-body topics-scroll">
+                    <div class="row row-cols-2">
+                      {% for checkbox in form.topics %}
+                        <div class="col form-check mb-2">
+                          <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                            {{ checkbox.tag }}
+                            {{ checkbox.choice_label }}
+                          </label>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {{ form.topics.errors }}
+          </div>
+          <!-- Publishers -->
+          <div class="mb-3">
+            <div class="accordion" id="publishersAccordion">
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="headingPublishers">
+                  <button class="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#collapsePublishers"
+                          aria-expanded="false"
+                          aria-controls="collapsePublishers">Select publishers</button>
+                </h2>
+                <div id="collapsePublishers"
+                     class="accordion-collapse collapse"
+                     aria-labelledby="headingPublishers"
+                     data-bs-parent="#publishersAccordion">
+                  <div class="accordion-body publishers-scroll">
+                    <div class="row row-cols-2">
+                      {% for checkbox in form.publishers %}
+                        <div class="col form-check mb-2">
+                          <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                            {{ checkbox.tag }}
+                            {{ checkbox.choice_label }}
+                          </label>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {{ form.publishers.errors }}
+          </div>
+          <!-- Submit button -->
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">Save Newspaper</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

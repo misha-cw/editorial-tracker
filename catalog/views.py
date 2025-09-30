@@ -3,7 +3,7 @@ from django.views import generic
 from django.urls import reverse_lazy
 
 from catalog.models import Newspaper, Topic, Redactor
-from catalog.forms import RedactorCreateForm , RedactorUpdateForm
+from catalog.forms import RedactorCreateForm , RedactorUpdateForm, NewspaperForm
 
 def index(request):
 
@@ -74,4 +74,38 @@ class RedactorDeleteView(generic.DeleteView):
     model = Redactor
     template_name = "catalog/redactor_confirm_delete.html"
     success_url = reverse_lazy("catalog:redactor-list")
+
+
+class NewspaperListView(generic.ListView):
+    model = Newspaper
+    template_name = "catalog/newspaper_list.html"
+    context_object_name = "newspapers"
+    paginate_by = 9
+    ordering = ["-published_date"]
+
+
+class NewspaperDetailView(generic.DetailView):
+    model = Newspaper
+    template_name = "catalog/newspaper_detail.html"
+    context_object_name = "newspaper"
+
+
+class NewspaperCreateView(generic.CreateView):
+    model = Newspaper
+    form_class = NewspaperForm
+    template_name = "catalog/newspaper_form.html"
+    success_url = reverse_lazy("catalog:newspaper-list")
+
+
+class NewspaperUpdateView(generic.UpdateView):
+    model = Newspaper
+    form_class = NewspaperForm
+    template_name = "catalog/newspaper_form.html"
+    success_url = reverse_lazy("catalog:newspaper-list")
+
+
+class NewspaperDeleteView(generic.DeleteView):
+    model = Newspaper
+    template_name = "catalog/newspaper_confirm_delete.html"
+    success_url = reverse_lazy("catalog:newspaper-list")
     
