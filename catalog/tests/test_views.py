@@ -1,7 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 
-from catalog.models import Topic, Redactor
+from catalog.models import Topic, Redactor, Newspaper
 
 
 class IndexViewTests(TestCase):
@@ -137,7 +138,7 @@ class RedactorListViewTests(TestCase):
         self.assertIn("redactors", response.context)
 
     def test_redactor_list_view_pagination(self):
-        Redactor.objects.bulk_create([
+        get_user_model().objects.bulk_create([
             Redactor(username=f"user{i}") for i in range(20)
         ])
 
@@ -172,7 +173,7 @@ class RedactorCreateViewTests(TestCase):
         }
         response = self.client.post(reverse("catalog:redactor-create"), data)
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(Redactor.objects.filter(username="newuser").exists())
+        self.assertTrue(get_user_model().objects.filter(username="newuser").exists())
 
     def test_redactor_create_view_invalid_post(self):
         data = {
@@ -186,12 +187,12 @@ class RedactorCreateViewTests(TestCase):
         response = self.client.post(reverse("catalog:redactor-create"), data)
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context["form"], "username", "This field is required.")
-        self.assertFalse(Redactor.objects.filter(username="").exists())
+        self.assertFalse(get_user_model().objects.filter(username="").exists())
 
 
 class RedactorUpdateViewTests(TestCase):
     def setUp(self):
-        self.redactor = Redactor.objects.create_user(
+        self.redactor = get_user_model().objects.create_user(
             username="existinguser",
             password="strongpass123",
             first_name="Existing",
@@ -236,7 +237,7 @@ class RedactorUpdateViewTests(TestCase):
 
 class RedactorDeleteViewTests(TestCase):
     def setUp(self):
-        self.redactor = Redactor.objects.create_user(
+        self.redactor = get_user_model().objects.create_user(
             username="user_to_delete",
             password="strongpass123",
             first_name="User",
@@ -255,4 +256,167 @@ class RedactorDeleteViewTests(TestCase):
     def test_redactor_delete_view_post(self):
         response = self.client.post(reverse("catalog:redactor-delete", args=[self.redactor.pk]))
         self.assertEqual(response.status_code, 302)
-        self.assertFalse(Redactor.objects.filter(pk=self.redactor.pk).exists())
+        self.assertFalse(get_user_model().objects.filter(pk=self.redactor.pk).exists())
+
+# Tests for Newspaper Views
+
+class NewspaperListViewTests(TestCase):
+    def test_newspaper_list_view_status_code(self):
+        response = self.client.get(reverse("catalog:newspaper-list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_newspaper_list_view_template_used(self):
+        response = self.client.get(reverse("catalog:newspaper-list"))
+        self.assertTemplateUsed(response, "catalog/newspaper_list.html")
+    
+    def test_newspaper_list_view_context_data(self):
+        response = self.client.get(reverse("catalog:newspaper-list"))
+        self.assertIn("newspapers", response.context)
+
+    def test_newspaper_list_view_pagination(self):
+        Newspaper.objects.bulk_create([
+            Newspaper(title=f"Newspaper {i}", content="Sample content") for i in range(12)
+        ])
+
+        response = self.client.get(reverse("catalog:newspaper-list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["is_paginated"])
+        self.assertEqual(len(response.context["newspapers"]), 9)
+
+        response = self.client.get(reverse("catalog:newspaper-list") + "?page=2")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["is_paginated"])
+        self.assertEqual(len(response.context["newspapers"]), 3)
+
+
+class NewspaperCreateViewTests(TestCase):
+    def test_newspaper_create_view_status_code(self):
+        response = self.client.get(reverse("catalog:newspaper-create"))
+        self.assertEqual(response.status_code, 200)
+    
+    def test_newspaper_create_view_template_used(self):
+        response = self.client.get(reverse("catalog:newspaper-create"))
+        self.assertTemplateUsed(response, "catalog/newspaper_form.html")
+    
+    def test_newspaper_create_view_post(self):
+        user = get_user_model().objects.create_user(username="publisher1", password="strongpass123")
+        topic = Topic.objects.create(name="Sample Topic")
+
+        data = {
+            "title": "New Newspaper",
+            "content": "This is the content of the newspaper.",
+            "publishers": [user.pk],
+            "topics": [topic.pk],
+        }
+        response = self.client.post(reverse("catalog:newspaper-create"), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Newspaper.objects.filter(title="New Newspaper").exists())
+
+    def test_newspaper_create_view_invalid_post(self):
+        data = {
+            "title": "",
+            "content": "This is the content of the newspaper.",
+            "publishers": [],
+            "topics": [],
+        }
+        response = self.client.post(reverse("catalog:newspaper-create"), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context["form"], "title", "This field is required.")
+        self.assertFalse(Newspaper.objects.filter(title="").exists())
+
+
+class NewspaperUpdateViewTests(TestCase):
+    def setUp(self):
+        self.newspaper = Newspaper.objects.create(
+            title="Original Newspaper",
+            content="Original content"
+        )
+        self.user = get_user_model().objects.create_user(username="publisher1", password="strongpass123")
+        self.topic = Topic.objects.create(name="Sample Topic")
+        self.newspaper.publishers.add(self.user)
+        self.newspaper.topics.add(self.topic)
+    
+    def test_newspaper_update_view_status_code(self):
+        response = self.client.get(reverse("catalog:newspaper-update", args=[self.newspaper.pk]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_newspaper_update_view_template_used(self):
+        response = self.client.get(reverse("catalog:newspaper-update", args=[self.newspaper.pk]))
+        self.assertTemplateUsed(response, "catalog/newspaper_form.html")
+    
+    def test_newspaper_update_view_post(self):
+        new_user = get_user_model().objects.create_user(username="publisher2", password="strongpass123")
+        new_topic = Topic.objects.create(name="New Topic")
+
+        data = {
+            "title": "Updated Newspaper",
+            "content": "Updated content",
+            "publishers": [new_user.pk],
+            "topics": [new_topic.pk],
+        }
+        response = self.client.post(reverse("catalog:newspaper-update", args=[self.newspaper.pk]), data)
+        self.assertEqual(response.status_code, 302)
+        self.newspaper.refresh_from_db()
+        self.assertEqual(self.newspaper.title, "Updated Newspaper")
+        self.assertEqual(self.newspaper.content, "Updated content")
+        self.assertIn(new_user, self.newspaper.publishers.all())
+        self.assertIn(new_topic, self.newspaper.topics.all())
+
+    def test_newspaper_update_view_invalid_post(self):
+        data = {
+            "title": "",
+            "content": "Updated content",
+            "publishers": [],
+            "topics": [],
+        }
+        response = self.client.post(reverse("catalog:newspaper-update", args=[self.newspaper.pk]), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context["form"], "title", "This field is required.")
+        self.newspaper.refresh_from_db()
+        self.assertEqual(self.newspaper.title, "Original Newspaper")
+
+
+class NewspaperDeleteViewTests(TestCase):
+    def setUp(self):
+        self.newspaper = Newspaper.objects.create(
+            title="Newspaper to be deleted",
+            content="Content to be deleted"
+        )
+    
+    def test_newspaper_delete_view_status_code(self):
+        response = self.client.get(reverse("catalog:newspaper-delete", args=[self.newspaper.pk]))
+        self.assertEqual(response.status_code, 200)
+    
+    def test_newspaper_delete_view_template_used(self):
+        response = self.client.get(reverse("catalog:newspaper-delete", args=[self.newspaper.pk]))
+        self.assertTemplateUsed(response, "catalog/newspaper_confirm_delete.html")
+    
+    def test_newspaper_delete_view_post(self):
+        response = self.client.post(reverse("catalog:newspaper-delete", args=[self.newspaper.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Newspaper.objects.filter(pk=self.newspaper.pk).exists())
+
+
+class NewspaperDetailViewTests(TestCase):
+    def setUp(self):
+        self.newspaper = Newspaper.objects.create(
+            title="Sample Newspaper",
+            content="Sample content"
+        )
+        self.user = get_user_model().objects.create_user(username="publisher1", password="strongpass123")
+        self.topic = Topic.objects.create(name="Sample Topic")
+        self.newspaper.publishers.add(self.user)
+        self.newspaper.topics.add(self.topic)
+    
+    def test_newspaper_detail_view_status_code(self):
+        response = self.client.get(reverse("catalog:newspaper-detail", args=[self.newspaper.pk]))
+        self.assertEqual(response.status_code, 200)
+    
+    def test_newspaper_detail_view_template_used(self):
+        response = self.client.get(reverse("catalog:newspaper-detail", args=[self.newspaper.pk]))
+        self.assertTemplateUsed(response, "catalog/newspaper_detail.html")
+    
+    def test_newspaper_detail_view_context_data(self):
+        response = self.client.get(reverse("catalog:newspaper-detail", args=[self.newspaper.pk]))
+        self.assertIn("newspaper", response.context)
+        self.assertEqual(response.context["newspaper"], self.newspaper)
