@@ -1,20 +1,18 @@
 {% extends "base.html" %}
 {% load crispy_forms_filters %}
 {% block content %}
-  <section class="py-5">
-    <div class="container">
-      <div class="card shadow-sm">
-        <div class="card-header">
-          <h5 class="mb-0">{{ object|yesno:"Update,Create" }} Topic</h5>
-        </div>
-        <div class="card-body">
-          <form method="post">
-            {% csrf_token %}
-            {{ form|crispy }}
-            <button type="submit" class="btn btn-success">Save</button>
-          </form>
-        </div>
-      </div>
+  <div class="card shadow-sm mx-auto my-4">
+    <div class="card-header">
+      <h2 class="mb-0 text-center">{{ object|yesno:"Update,Create" }} Topic</h2>
     </div>
-  </section>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="d-grid mt-4">
+          <button type="submit" class="btn btn-primary btn-lg">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
 {% endblock content %}

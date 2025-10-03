@@ -1,44 +1,42 @@
 {% extends "base.html" %}
 {% block content %}
-  <section class="py-5">
-    <div class="card shadow-sm">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h1 class="mb-0">Newspapers</h1>
-        <button class="btn btn-primary">
-          <a href="{% url 'catalog:newspaper-create' %}"
-             class="text-white text-decoration-none">Add Newspaper</a>
-        </button>
-      </div>
-      <div class="row g-4 p-2">
-        {% for newspaper in newspapers %}
-          <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm ">
-              <div class="card-body d-flex flex-column">
-                <a href="{% url 'catalog:newspaper-detail' newspaper.pk %}"
-                   class="stretched-link"></a>
-                <h5 class="card-title">{{ newspaper.title|truncatechars:45 }}</h5>
-                {% if newspaper.topics.exists %}
-                  <p class="small mb-1">
-                    <strong>Topics:</strong>
-                    {{ newspaper.topics.all|join:", "|truncatewords:7 }}
-                  </p>
-                {% endif %}
-                <p class="card-text text-muted">{{ newspaper.content|truncatewords:30 }}</p>
-                {% if newspaper.publishers.exists %}
-                  <div class="mt-auto d-flex justify-content-end">
-                    <small class="text-muted">{{ newspaper.publishers.all|join:", "|truncatewords:3 }}</small>
-                  </div>
-                {% endif %}
+  <div class="card shadow-sm my-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h1 class="mb-0">Newspapers</h1>
+      <button class="btn btn-primary">
+        <a href="{% url 'catalog:newspaper-create' %}"
+           class="text-white text-decoration-none">Add Newspaper</a>
+      </button>
+    </div>
+    <div class="row g-4 p-2">
+      {% for newspaper in newspapers %}
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm ">
+            <div class="card-body d-flex flex-column">
+              <a href="{% url 'catalog:newspaper-detail' newspaper.pk %}"
+                 class="stretched-link"></a>
+              <h5 class="card-title">{{ newspaper.title|truncatechars:45 }}</h5>
+              {% if newspaper.topics.exists %}
+                <p class="small mb-1">
+                  <strong>Topics:</strong>
+                  {{ newspaper.topics.all|join:", "|truncatewords:7 }}
+                </p>
+              {% endif %}
+              <p class="card-text text-muted">{{ newspaper.content|truncatewords:30 }}</p>
+              {% if newspaper.publishers.exists %}
                 <div class="mt-auto d-flex justify-content-end">
-                  <p class="text-secondary small mb-3">{{ newspaper.published_date|date:"M d, Y" }}</p>
+                  <small class="text-muted">{{ newspaper.publishers.all|join:", "|truncatewords:3 }}</small>
                 </div>
+              {% endif %}
+              <div class="mt-auto d-flex justify-content-end">
+                <p class="text-secondary small mb-3">{{ newspaper.published_date|date:"M d, Y" }}</p>
               </div>
             </div>
           </div>
-        {% empty %}
-          <p>No newspapers found.</p>
-        {% endfor %}
-      </div>
+        </div>
+      {% empty %}
+        <p>No newspapers found.</p>
+      {% endfor %}
     </div>
-  </section>
+  </div>
 {% endblock content %}
