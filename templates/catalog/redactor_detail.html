@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="container py-4">
+    <div class="card shadow-sm position-relative">
+      <!-- Action buttons -->
+      <div class="position-absolute top-0 end-0 m-3 d-flex gap-2">
+        <a href="{% url 'catalog:redactor-update' redactor.pk %}"
+           class="btn btn-sm btn-warning">Edit</a>
+        <a href="{% url 'catalog:redactor-delete' redactor.pk %}"
+           class="btn btn-sm btn-danger">Delete</a>
+      </div>
+      <div class="card-body d-flex flex-column">
+        <!-- Header: avatar + name -->
+        <div class="d-flex align-items-center mb-3">
+          <div class="me-3">
+            <i class="fas fa-user-circle fa-3x"></i>
+          </div>
+          <div>
+            <h2 class="card-title mb-0">{{ redactor.username }}</h2>
+            <p class="small text-secondary mb-0">{{ redactor.get_full_name }}</p>
+          </div>
+        </div>
+        <!-- Meta: years of experience -->
+          <p class="mb-2">
+            <strong>Years of experience:</strong> {{ redactor.years_of_experience }}
+          </p>
+        <!-- Newspapers -->
+        {% if redactor.newspapers.exists %}
+          <hr>
+          <h5 class="mt-3">Newspapers:</h5>
+          <ul class="list-group mb-3">
+            {% for newspaper in redactor.newspapers.all %}
+              <li class="overflow-hidden text-truncate border-top list-group-item d-flex justify-content-between align-items-center {% cycle 'bg-gray' 'bg-white' %}">
+                <span class="fw-semibold text-truncate">{{ newspaper.title }}</span>
+                <div class="btn-group btn-group-sm"
+                     role="group"
+                     aria-label="Newspaper actions">
+                  <a href="{% url 'catalog:newspaper-detail' newspaper.pk %}"
+                     class="btn btn-info">View</a>
+                  <a href="{% url 'catalog:newspaper-update' newspaper.pk %}"
+                     class="btn btn-warning">Edit</a>
+                  <a href="{% url 'catalog:newspaper-delete' newspaper.pk %}"
+                     class="btn btn-danger">Delete</a>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted mt-3">No newspapers assigned.</p>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+{% endblock content %}

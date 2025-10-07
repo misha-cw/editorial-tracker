@@ -56,6 +56,12 @@ class RedactorListView(generic.ListView):
     ordering = ["username"]
 
 
+class RedactorDetailView(generic.DetailView):
+    model = Redactor
+    template_name = "catalog/redactor_detail.html"
+    context_object_name = "redactor"
+
+
 class RedactorCreateView(generic.CreateView):
     model = Redactor
     form_class = RedactorCreateForm

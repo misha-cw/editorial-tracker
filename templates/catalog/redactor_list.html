@@ -17,7 +17,7 @@
             <th scope="col">Username</th>
             <th scope="col">Full Name</th>
             <th scope="col">Years of expirience</th>
-            <th scope="col" class="text-end pe-5">Actions</th>
+            <th scope="col" class="text-end pe-6">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -28,10 +28,14 @@
               <td class="h6">{{ redactor.first_name }} {{ redactor.last_name }}</td>
               <td class="h6">{{ redactor.years_of_experience }}</td>
               <td class="text-end pe-3">
-                <a href="{% url 'catalog:redactor-update' redactor.pk %}"
-                   class="btn btn-sm btn-secondary">Edit</a>
-                <a href="{% url 'catalog:redactor-delete' redactor.pk %}"
-                   class="btn btn-sm btn-danger">Delete</a>
+                <div class="btn-group">
+                  <a href="{% url 'catalog:redactor-detail' redactor.pk %}"
+                     class="btn btn-sm btn-info text-white">View</a>
+                  <a href="{% url 'catalog:redactor-update' redactor.pk %}"
+                     class="btn btn-sm btn-secondary">Edit</a>
+                  <a href="{% url 'catalog:redactor-delete' redactor.pk %}"
+                     class="btn btn-sm btn-danger">Delete</a>
+                </div>
               </td>
             </tr>
           {% empty %}
