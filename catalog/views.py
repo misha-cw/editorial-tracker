@@ -3,7 +3,14 @@ from django.views import generic
 from django.urls import reverse_lazy
 
 from catalog.models import Newspaper, Topic, Redactor
-from catalog.forms import RedactorCreateForm , RedactorUpdateForm, NewspaperForm
+from catalog.forms import (
+    RedactorCreateForm,
+    RedactorUpdateForm, 
+    NewspaperForm,
+    NewspaperTitleSearchForm,
+    RedactorUsernameSearchForm,
+    TopicNameSearchForm,
+)
 
 def index(request):
 
@@ -26,6 +33,21 @@ class TopicListView(generic.ListView):
     context_object_name = "topics"
     paginate_by = 15
     ordering = ["name"]
+
+    def get_context_data(self, **kwargs):
+        context = super(TopicListView, self).get_context_data(**kwargs)
+        model = self.request.GET.get("name", "")
+        context["search_form"] = TopicNameSearchForm(
+            initial={"name": model}
+        )
+        return context
+    
+    def get_queryset(self):
+        queryset = Topic.objects.all().order_by("name")
+        name = self.request.GET.get("name", "")
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+        return queryset
 
 
 class TopicCreateView(generic.CreateView):
@@ -53,8 +75,21 @@ class RedactorListView(generic.ListView):
     template_name = "catalog/redactor_list.html"
     context_object_name = "redactors"
     paginate_by = 15
-    ordering = ["username"]
 
+    def get_context_data(self, **kwargs):
+        context = super(RedactorListView, self).get_context_data(**kwargs)
+        model = self.request.GET.get("username", "")
+        context["search_form"] = RedactorUsernameSearchForm(
+            initial={"username": model}
+        )
+        return context
+    
+    def get_queryset(self):
+        queryset = Redactor.objects.all().order_by("username")
+        username = self.request.GET.get("username", "")
+        if username:
+            queryset = queryset.filter(username__icontains=username)
+        return queryset
 
 class RedactorDetailView(generic.DetailView):
     model = Redactor
@@ -87,7 +122,21 @@ class NewspaperListView(generic.ListView):
     template_name = "catalog/newspaper_list.html"
     context_object_name = "newspapers"
     paginate_by = 9
-    ordering = ["-published_date"]
+
+    def get_context_data(self, **kwargs):
+        context = super(NewspaperListView, self).get_context_data(**kwargs)
+        model = self.request.GET.get("title", "")
+        context["search_form"] = NewspaperTitleSearchForm(
+            initial={"title": model}
+        )
+        return context
+    
+    def get_queryset(self):
+        queryset = Newspaper.objects.all().prefetch_related("topics", "publishers").order_by("published_date")
+        title = self.request.GET.get("title", "")
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+        return queryset
 
 
 class NewspaperDetailView(generic.DetailView):

@@ -3,7 +3,13 @@
 {% block content %}
   <div class="card shadow-sm my-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">Redactors</h5>
+      <h2 class="mb-0">Redactors</h2>
+      <form action="" method="get" class="d-flex align-items-center">
+        {{ search_form.username }}
+        <button type="submit" class="btn btn-secondary">
+          <i class="fas fa-search"></i>
+        </button>
+      </form>
       <button class="btn btn-primary">
         <a href="{% url 'catalog:redactor-create' %}"
            class="text-white text-decoration-none">Add Redactor</a>

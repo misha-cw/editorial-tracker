@@ -68,4 +68,44 @@ class NewspaperForm(forms.ModelForm):
             "content": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
         }
 
-    
+
+class NewspaperTitleSearchForm(forms.Form):
+    title = forms.CharField(
+        max_length=255,
+        required=False,
+        label="",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control me-2",
+                "placeholder": "Search by Title",
+            }
+        ),
+    )
+
+
+class RedactorUsernameSearchForm(forms.Form):
+    username = forms.CharField(
+        max_length=255,
+        required=False,
+        label="",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control me-2",
+                "placeholder": "Search by Username"
+            }
+        ),
+    )
+
+
+class TopicNameSearchForm(forms.Form):
+    name = forms.CharField(
+        max_length=255,
+        required=False,
+        label="",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control me-2",
+                "placeholder": "Search by Name"
+            }
+        ),
+    )
