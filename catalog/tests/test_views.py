@@ -153,6 +153,30 @@ class RedactorListViewTests(TestCase):
         self.assertEqual(len(response.context["redactors"]), 5)
 
 
+class RedactorDetailViewTests(TestCase):
+    def setUp(self):
+        self.redactor = get_user_model().objects.create_user(
+            username="testuser",
+            password="strongpass123",
+            first_name="Test",
+            last_name="User",
+            years_of_experience=5
+        )
+    
+    def test_redactor_detail_view_status_code(self):
+        response = self.client.get(reverse("catalog:redactor-detail", args=[self.redactor.pk]))
+        self.assertEqual(response.status_code, 200)
+    
+    def test_redactor_detail_view_template_used(self):
+        response = self.client.get(reverse("catalog:redactor-detail", args=[self.redactor.pk]))
+        self.assertTemplateUsed(response, "catalog/redactor_detail.html")
+    
+    def test_redactor_detail_view_context_data(self):
+        response = self.client.get(reverse("catalog:redactor-detail", args=[self.redactor.pk]))
+        self.assertIn("redactor", response.context)
+        self.assertEqual(response.context["redactor"], self.redactor)
+
+
 class RedactorCreateViewTests(TestCase):
     def test_redactor_create_view_status_code(self):
         response = self.client.get(reverse("catalog:redactor-create"))
