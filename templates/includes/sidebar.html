@@ -31,7 +31,7 @@
     <div class="mt-auto pt-3">
       {% if user.is_authenticated %}
         <div class="d-flex align-items-center justify-content-between bg-primary-dark rounded px-2 py-2">
-          <a href="#"
+          <a href="{% url 'catalog:redactor-detail' user.pk %}"
              class=" text-white d-flex align-items-center overflow-hidden text-truncate">
             <i class="fas fa-user-circle fa-2x me-2"></i>
              <span class="fw-semibold text-truncate">{{ user.username }}</span>

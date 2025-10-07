@@ -132,7 +132,7 @@ class NewspaperListView(generic.ListView):
         return context
     
     def get_queryset(self):
-        queryset = Newspaper.objects.all().prefetch_related("topics", "publishers").order_by("published_date")
+        queryset = Newspaper.objects.all().prefetch_related("topics", "publishers").order_by("-published_date")
         title = self.request.GET.get("title", "")
         if title:
             queryset = queryset.filter(title__icontains=title)
