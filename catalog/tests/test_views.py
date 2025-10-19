@@ -50,6 +50,58 @@ class TopicListViewTests(TestCase):
         self.assertTrue(response.context["is_paginated"])
         self.assertEqual(len(response.context["topics"]), 5)
 
+    def test_search_topic_list_view(self):
+        Topic.objects.bulk_create([
+            Topic(name="Science"),
+            Topic(name="Sports"),
+            Topic(name="Technology"),
+        ])
+
+        response = self.client.get(reverse("catalog:topic-list") + "?name=Tech")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("topics", response.context)
+        topics = response.context["topics"]
+        self.assertEqual(topics[0].name, "Technology")
+        self.assertEqual(len(topics), 1)
+
+    def test_search_topic_list_view_no_results(self):
+        Topic.objects.bulk_create([
+            Topic(name="Science"),
+            Topic(name="Sports"),
+            Topic(name="Technology"),
+        ])
+
+        response = self.client.get(reverse("catalog:topic-list") + "?name=Health")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("topics", response.context)
+        topics = response.context["topics"]
+        self.assertEqual(len(topics), 0)
+
+    def test_search_topic_list_view_empty_query(self):
+        Topic.objects.bulk_create([
+            Topic(name="Science"),
+            Topic(name="Sports"),
+            Topic(name="Technology"),
+        ])
+
+        response = self.client.get(reverse("catalog:topic-list") + "?name=")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("topics", response.context)
+        topics = response.context["topics"]
+        self.assertEqual(len(topics), 3)
+
+    def test_search_topic_list_view_with_pagination(self):
+        Topic.objects.bulk_create([
+            Topic(name=f"Topic {i}") for i in range(20)
+        ])
+
+        response = self.client.get(reverse("catalog:topic-list") + "?name=Topic&page=2")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("topics", response.context)
+        self.assertTrue(response.context["is_paginated"])
+        topics = response.context["topics"]
+        self.assertEqual(len(topics), 5)
+
 
 class TopicCreateViewTests(TestCase):
     def test_topic_create_view_status_code(self):
@@ -74,6 +126,7 @@ class TopicCreateViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context["form"], "name", "This field is required.")
         self.assertFalse(Topic.objects.filter(name="").exists())
+
 
 class TopicUpdateViewTests(TestCase):
     def setUp(self):
@@ -151,6 +204,55 @@ class RedactorListViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["is_paginated"])
         self.assertEqual(len(response.context["redactors"]), 5)
+
+    def test_search_redactor_list_view(self):
+        get_user_model().objects.bulk_create([
+            Redactor(username="alice"),
+            Redactor(username="bob"),
+            Redactor(username="charlie"),
+        ])
+        response = self.client.get(reverse("catalog:redactor-list") + "?username=bo")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("redactors", response.context)
+        redactors = response.context["redactors"]
+        self.assertEqual(redactors[0].username, "bob")
+        self.assertEqual(len(redactors), 1)
+
+    def test_search_redactor_list_view_no_results(self):
+        get_user_model().objects.bulk_create([
+            Redactor(username="alice"),
+            Redactor(username="bob"),
+            Redactor(username="charlie"),
+        ])
+        response = self.client.get(reverse("catalog:redactor-list") + "?username=dan")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("redactors", response.context)
+        redactors = response.context["redactors"]
+        self.assertEqual(len(redactors), 0)
+    
+    def test_search_redactor_list_view_empty_query(self):
+        get_user_model().objects.bulk_create([
+            Redactor(username="alice"),
+            Redactor(username="bob"),
+            Redactor(username="charlie"),
+        ])
+        response = self.client.get(reverse("catalog:redactor-list") + "?username=")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("redactors", response.context)
+        redactors = response.context["redactors"]
+        self.assertEqual(len(redactors), 3)
+
+    def test_search_redactor_list_view_with_pagination(self):
+        get_user_model().objects.bulk_create([
+            Redactor(username=f"user{i}") for i in range(20)
+        ])
+
+        response = self.client.get(reverse("catalog:redactor-list") + "?username=user&page=2")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("redactors", response.context)
+        self.assertTrue(response.context["is_paginated"])
+        redactors = response.context["redactors"]
+        self.assertEqual(len(redactors), 5)
 
 
 class RedactorDetailViewTests(TestCase):
@@ -311,6 +413,55 @@ class NewspaperListViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["is_paginated"])
         self.assertEqual(len(response.context["newspapers"]), 3)
+
+    def test_search_newspaper_list_view(self):
+        Newspaper.objects.bulk_create([
+            Newspaper(title="Daily News", content="Content 1"),
+            Newspaper(title="Global Times", content="Content 2"),
+            Newspaper(title="Tech Today", content="Content 3"),
+        ])
+        response = self.client.get(reverse("catalog:newspaper-list") + "?title=Tech")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("newspapers", response.context)
+        newspapers = response.context["newspapers"]
+        self.assertEqual(newspapers[0].title, "Tech Today")
+        self.assertEqual(len(newspapers), 1)
+
+    def test_search_newspaper_list_view_no_results(self):
+        Newspaper.objects.bulk_create([
+            Newspaper(title="Daily News", content="Content 1"),
+            Newspaper(title="Global Times", content="Content 2"),
+            Newspaper(title="Tech Today", content="Content 3"),
+        ])
+        response = self.client.get(reverse("catalog:newspaper-list") + "?title=Health")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("newspapers", response.context)
+        newspapers = response.context["newspapers"]
+        self.assertEqual(len(newspapers), 0)
+
+    def test_search_newspaper_list_view_empty_query(self):
+        Newspaper.objects.bulk_create([
+            Newspaper(title="Daily News", content="Content 1"),
+            Newspaper(title="Global Times", content="Content 2"),
+            Newspaper(title="Tech Today", content="Content 3"),
+        ])
+        response = self.client.get(reverse("catalog:newspaper-list") + "?title=")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("newspapers", response.context)
+        newspapers = response.context["newspapers"]
+        self.assertEqual(len(newspapers), 3)
+
+    def test_search_newspaper_list_view_with_pagination(self):
+        Newspaper.objects.bulk_create([
+            Newspaper(title=f"Newspaper {i}", content="Sample content") for i in range(14)
+        ])
+
+        response = self.client.get(reverse("catalog:newspaper-list") + "?title=Newspaper&page=2")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("newspapers", response.context)
+        self.assertTrue(response.context["is_paginated"])
+        newspapers = response.context["newspapers"]
+        self.assertEqual(len(newspapers), 5)
 
 
 class NewspaperCreateViewTests(TestCase):
