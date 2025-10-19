@@ -6,46 +6,74 @@ from catalog.models import Topic, Redactor, Newspaper
 
 
 class IndexViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="strongpass123"
+        )
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:index")
+
     def test_index_view_status_code(self):
-        response = self.client.get(reverse("catalog:index"))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
 
     def test_index_view_template_used(self):
-        response = self.client.get(reverse("catalog:index"))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/index.html")
 
     def test_index_view_context_data(self):
-        response = self.client.get(reverse("catalog:index"))
+        response = self.client.get(self.url)
         self.assertIn("num_newspapers", response.context)
         self.assertIn("num_topics", response.context)
         self.assertIn("num_redactors", response.context)
 
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
+
 # Tests for Topic Views
 
 class TopicListViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="strongpass123"
+        )
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:topic-list")
+
     def test_topic_list_view_status_code(self):
-        response = self.client.get(reverse("catalog:topic-list"))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
 
     def test_topic_list_view_template_used(self):
-        response = self.client.get(reverse("catalog:topic-list"))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/topic_list.html")
 
     def test_topic_list_view_context_data(self):
-        response = self.client.get(reverse("catalog:topic-list"))
+        response = self.client.get(self.url)
         self.assertIn("topics", response.context)
+
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
 
     def test_topic_list_view_pagination(self):
         Topic.objects.bulk_create([
             Topic(name=f"Topic {i}") for i in range(20)
         ])
 
-        response = self.client.get(reverse("catalog:topic-list"))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["is_paginated"])
         self.assertEqual(len(response.context["topics"]), 15) 
 
-        response = self.client.get(reverse("catalog:topic-list") + "?page=2")
+        response = self.client.get(self.url + "?page=2")
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["is_paginated"])
         self.assertEqual(len(response.context["topics"]), 5)
@@ -57,7 +85,7 @@ class TopicListViewTests(TestCase):
             Topic(name="Technology"),
         ])
 
-        response = self.client.get(reverse("catalog:topic-list") + "?name=Tech")
+        response = self.client.get(self.url + "?name=Tech")
         self.assertEqual(response.status_code, 200)
         self.assertIn("topics", response.context)
         topics = response.context["topics"]
@@ -71,7 +99,7 @@ class TopicListViewTests(TestCase):
             Topic(name="Technology"),
         ])
 
-        response = self.client.get(reverse("catalog:topic-list") + "?name=Health")
+        response = self.client.get(self.url + "?name=Health")
         self.assertEqual(response.status_code, 200)
         self.assertIn("topics", response.context)
         topics = response.context["topics"]
@@ -84,7 +112,7 @@ class TopicListViewTests(TestCase):
             Topic(name="Technology"),
         ])
 
-        response = self.client.get(reverse("catalog:topic-list") + "?name=")
+        response = self.client.get(self.url + "?name=")
         self.assertEqual(response.status_code, 200)
         self.assertIn("topics", response.context)
         topics = response.context["topics"]
@@ -95,7 +123,7 @@ class TopicListViewTests(TestCase):
             Topic(name=f"Topic {i}") for i in range(20)
         ])
 
-        response = self.client.get(reverse("catalog:topic-list") + "?name=Topic&page=2")
+        response = self.client.get(self.url + "?name=Topic&page=2")
         self.assertEqual(response.status_code, 200)
         self.assertIn("topics", response.context)
         self.assertTrue(response.context["is_paginated"])
@@ -104,23 +132,37 @@ class TopicListViewTests(TestCase):
 
 
 class TopicCreateViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="strongpass123"
+        )
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:topic-create")
+
     def test_topic_create_view_status_code(self):
-        response = self.client.get(reverse("catalog:topic-create"))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
 
     def test_topic_create_view_template_used(self):
-        response = self.client.get(reverse("catalog:topic-create"))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/topic_form.html")
 
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
+
     def test_topic_create_view_post(self):
-        response = self.client.post(reverse("catalog:topic-create"), {
+        response = self.client.post(self.url, {
             "name": "New Topic"
         })
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Topic.objects.filter(name="New Topic").exists())
 
     def test_topic_create_view_invalid_post(self):
-        response = self.client.post(reverse("catalog:topic-create"), {
+        response = self.client.post(self.url, {
             "name": ""
         })
         self.assertEqual(response.status_code, 200)
@@ -130,18 +172,30 @@ class TopicCreateViewTests(TestCase):
 
 class TopicUpdateViewTests(TestCase):
     def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="strongpass123"
+        )
+        self.client.force_login(self.user)
         self.topic = Topic.objects.create(name="Original Topic")
+        self.url = reverse("catalog:topic-update", args=[1])
 
     def test_topic_update_view_status_code(self):
-        response = self.client.get(reverse("catalog:topic-update", args=[self.topic.pk]))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
 
     def test_topic_update_view_template_used(self):
-        response = self.client.get(reverse("catalog:topic-update", args=[self.topic.pk]))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/topic_form.html")
 
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
+
     def test_topic_update_view_post(self):
-        response = self.client.post(reverse("catalog:topic-update", args=[self.topic.pk]), {
+        response = self.client.post(self.url, {
             "name": "Updated Topic"
         })
         self.assertEqual(response.status_code, 302)
@@ -149,7 +203,7 @@ class TopicUpdateViewTests(TestCase):
         self.assertEqual(self.topic.name, "Updated Topic")
 
     def test_topic_update_view_invalid_post(self):
-        response = self.client.post(reverse("catalog:topic-update", args=[self.topic.pk]), {
+        response = self.client.post(self.url, {
             "name": ""
         })
         self.assertEqual(response.status_code, 200)
@@ -160,50 +214,76 @@ class TopicUpdateViewTests(TestCase):
 
 class TopicDeleteViewTests(TestCase):
     def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="strongpass123"
+        )
+        self.client.force_login(self.user)
         self.topic = Topic.objects.create(name="Topic to be deleted")
+        self.url = reverse("catalog:topic-delete", args=[self.topic.pk])
     
     def test_topic_delete_view_status_code(self):
-        response = self.client.get(reverse("catalog:topic-delete", args=[self.topic.pk]))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
     
     def test_topic_delete_view_template_used(self):
-        response = self.client.get(reverse("catalog:topic-delete", args=[self.topic.pk]))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/topic_confirm_delete.html")
+
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
     
     def test_topic_delete_view_post(self):
-        response = self.client.post(reverse("catalog:topic-delete", args=[self.topic.pk]))
+        response = self.client.post(self.url)
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Topic.objects.filter(pk=self.topic.pk).exists())
 
 # Tests for Redactor Views
 
 class RedactorListViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="strongpass123"
+        )
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:redactor-list")
+
     def test_redactor_list_view_status_code(self):
-        response = self.client.get(reverse("catalog:redactor-list"))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
 
     def test_redactor_list_view_template_used(self):
-        response = self.client.get(reverse("catalog:redactor-list"))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/redactor_list.html")
     
     def test_redactor_list_view_context_data(self):
-        response = self.client.get(reverse("catalog:redactor-list"))
+        response = self.client.get(self.url)
         self.assertIn("redactors", response.context)
+
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
 
     def test_redactor_list_view_pagination(self):
         get_user_model().objects.bulk_create([
             Redactor(username=f"user{i}") for i in range(20)
         ])
 
-        response = self.client.get(reverse("catalog:redactor-list"))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["is_paginated"])
         self.assertEqual(len(response.context["redactors"]), 15)
 
-        response = self.client.get(reverse("catalog:redactor-list") + "?page=2")
+        response = self.client.get(self.url + "?page=2")
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["is_paginated"])
-        self.assertEqual(len(response.context["redactors"]), 5)
+        self.assertEqual(len(response.context["redactors"]), 6)
 
     def test_search_redactor_list_view(self):
         get_user_model().objects.bulk_create([
@@ -211,7 +291,7 @@ class RedactorListViewTests(TestCase):
             Redactor(username="bob"),
             Redactor(username="charlie"),
         ])
-        response = self.client.get(reverse("catalog:redactor-list") + "?username=bo")
+        response = self.client.get(self.url + "?username=bo")
         self.assertEqual(response.status_code, 200)
         self.assertIn("redactors", response.context)
         redactors = response.context["redactors"]
@@ -224,7 +304,7 @@ class RedactorListViewTests(TestCase):
             Redactor(username="bob"),
             Redactor(username="charlie"),
         ])
-        response = self.client.get(reverse("catalog:redactor-list") + "?username=dan")
+        response = self.client.get(self.url + "?username=dan")
         self.assertEqual(response.status_code, 200)
         self.assertIn("redactors", response.context)
         redactors = response.context["redactors"]
@@ -236,57 +316,79 @@ class RedactorListViewTests(TestCase):
             Redactor(username="bob"),
             Redactor(username="charlie"),
         ])
-        response = self.client.get(reverse("catalog:redactor-list") + "?username=")
+        response = self.client.get(self.url + "?username=")
         self.assertEqual(response.status_code, 200)
         self.assertIn("redactors", response.context)
         redactors = response.context["redactors"]
-        self.assertEqual(len(redactors), 3)
+        self.assertEqual(len(redactors), 4)
 
     def test_search_redactor_list_view_with_pagination(self):
         get_user_model().objects.bulk_create([
             Redactor(username=f"user{i}") for i in range(20)
         ])
 
-        response = self.client.get(reverse("catalog:redactor-list") + "?username=user&page=2")
+        response = self.client.get(self.url + "?username=user&page=2")
         self.assertEqual(response.status_code, 200)
         self.assertIn("redactors", response.context)
         self.assertTrue(response.context["is_paginated"])
         redactors = response.context["redactors"]
-        self.assertEqual(len(redactors), 5)
+        self.assertEqual(len(redactors), 6)
 
 
 class RedactorDetailViewTests(TestCase):
     def setUp(self):
-        self.redactor = get_user_model().objects.create_user(
+        self.user = get_user_model().objects.create_user(
             username="testuser",
             password="strongpass123",
             first_name="Test",
             last_name="User",
             years_of_experience=5
         )
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:redactor-detail", args=[self.user.pk])
     
     def test_redactor_detail_view_status_code(self):
-        response = self.client.get(reverse("catalog:redactor-detail", args=[self.redactor.pk]))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
     
     def test_redactor_detail_view_template_used(self):
-        response = self.client.get(reverse("catalog:redactor-detail", args=[self.redactor.pk]))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/redactor_detail.html")
     
     def test_redactor_detail_view_context_data(self):
-        response = self.client.get(reverse("catalog:redactor-detail", args=[self.redactor.pk]))
+        response = self.client.get(self.url)
         self.assertIn("redactor", response.context)
-        self.assertEqual(response.context["redactor"], self.redactor)
+        self.assertEqual(response.context["redactor"], self.user)
+
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
 
 
 class RedactorCreateViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="strongpass123"
+        )
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:redactor-create")
+
     def test_redactor_create_view_status_code(self):
-        response = self.client.get(reverse("catalog:redactor-create"))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
     
     def test_redactor_create_view_template_used(self):
-        response = self.client.get(reverse("catalog:redactor-create"))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/redactor_form.html")
+
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
     
     def test_redactor_create_view_post(self):
         data = {
@@ -297,7 +399,7 @@ class RedactorCreateViewTests(TestCase):
             "last_name": "User",
             "years_of_experience": 5,
         }
-        response = self.client.post(reverse("catalog:redactor-create"), data)
+        response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(get_user_model().objects.filter(username="newuser").exists())
 
@@ -310,7 +412,7 @@ class RedactorCreateViewTests(TestCase):
             "last_name": "User",
             "years_of_experience": 5,
         }
-        response = self.client.post(reverse("catalog:redactor-create"), data)
+        response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context["form"], "username", "This field is required.")
         self.assertFalse(get_user_model().objects.filter(username="").exists())
@@ -318,21 +420,29 @@ class RedactorCreateViewTests(TestCase):
 
 class RedactorUpdateViewTests(TestCase):
     def setUp(self):
-        self.redactor = get_user_model().objects.create_user(
+        self.user = get_user_model().objects.create_user(
             username="existinguser",
             password="strongpass123",
             first_name="Existing",
             last_name="User",
             years_of_experience=10
         )
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:redactor-update", args=[self.user.pk])
     
     def test_redactor_update_view_status_code(self):
-        response = self.client.get(reverse("catalog:redactor-update", args=[self.redactor.pk]))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
 
     def test_redactor_update_view_template_used(self):
-        response = self.client.get(reverse("catalog:redactor-update", args=[self.redactor.pk]))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/redactor_form.html")
+
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
     
     def test_redactor_update_view_post(self):
         data = {
@@ -341,12 +451,12 @@ class RedactorUpdateViewTests(TestCase):
             "last_name": "User",
             "years_of_experience": 15,
         }
-        response = self.client.post(reverse("catalog:redactor-update", args=[self.redactor.pk]), data)
+        response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 302)
-        self.redactor.refresh_from_db()
-        self.assertEqual(self.redactor.username, "updateduser")
-        self.assertEqual(self.redactor.first_name, "Updated")
-        self.assertEqual(self.redactor.years_of_experience, 15)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.username, "updateduser")
+        self.assertEqual(self.user.first_name, "Updated")
+        self.assertEqual(self.user.years_of_experience, 15)
 
     def test_redactor_update_view_invalid_post(self):
         data = {
@@ -355,61 +465,83 @@ class RedactorUpdateViewTests(TestCase):
             "last_name": "User",
             "years_of_experience": 15,
         }
-        response = self.client.post(reverse("catalog:redactor-update", args=[self.redactor.pk]), data)
+        response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context["form"], "username", "This field is required.")
-        self.redactor.refresh_from_db()
-        self.assertEqual(self.redactor.username, "existinguser")
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.username, "existinguser")
 
 class RedactorDeleteViewTests(TestCase):
     def setUp(self):
-        self.redactor = get_user_model().objects.create_user(
+        self.user = get_user_model().objects.create_user(
             username="user_to_delete",
             password="strongpass123",
             first_name="User",
             last_name="ToDelete",
             years_of_experience=8
         )
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:redactor-delete", args=[self.user.pk])
     
     def test_redactor_delete_view_status_code(self):
-        response = self.client.get(reverse("catalog:redactor-delete", args=[self.redactor.pk]))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
     
     def test_redactor_delete_view_template_used(self):
-        response = self.client.get(reverse("catalog:redactor-delete", args=[self.redactor.pk]))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/redactor_confirm_delete.html")
+
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
     
     def test_redactor_delete_view_post(self):
-        response = self.client.post(reverse("catalog:redactor-delete", args=[self.redactor.pk]))
+        response = self.client.post(self.url)
         self.assertEqual(response.status_code, 302)
-        self.assertFalse(get_user_model().objects.filter(pk=self.redactor.pk).exists())
+        self.assertFalse(get_user_model().objects.filter(pk=self.user.pk).exists())
 
 # Tests for Newspaper Views
 
 class NewspaperListViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="strongpass123"
+        )
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:newspaper-list")
+
     def test_newspaper_list_view_status_code(self):
-        response = self.client.get(reverse("catalog:newspaper-list"))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
 
     def test_newspaper_list_view_template_used(self):
-        response = self.client.get(reverse("catalog:newspaper-list"))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/newspaper_list.html")
     
     def test_newspaper_list_view_context_data(self):
-        response = self.client.get(reverse("catalog:newspaper-list"))
+        response = self.client.get(self.url)
         self.assertIn("newspapers", response.context)
+
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
 
     def test_newspaper_list_view_pagination(self):
         Newspaper.objects.bulk_create([
             Newspaper(title=f"Newspaper {i}", content="Sample content") for i in range(12)
         ])
 
-        response = self.client.get(reverse("catalog:newspaper-list"))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["is_paginated"])
         self.assertEqual(len(response.context["newspapers"]), 9)
 
-        response = self.client.get(reverse("catalog:newspaper-list") + "?page=2")
+        response = self.client.get(self.url + "?page=2")
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["is_paginated"])
         self.assertEqual(len(response.context["newspapers"]), 3)
@@ -420,7 +552,7 @@ class NewspaperListViewTests(TestCase):
             Newspaper(title="Global Times", content="Content 2"),
             Newspaper(title="Tech Today", content="Content 3"),
         ])
-        response = self.client.get(reverse("catalog:newspaper-list") + "?title=Tech")
+        response = self.client.get(self.url + "?title=Tech")
         self.assertEqual(response.status_code, 200)
         self.assertIn("newspapers", response.context)
         newspapers = response.context["newspapers"]
@@ -433,7 +565,7 @@ class NewspaperListViewTests(TestCase):
             Newspaper(title="Global Times", content="Content 2"),
             Newspaper(title="Tech Today", content="Content 3"),
         ])
-        response = self.client.get(reverse("catalog:newspaper-list") + "?title=Health")
+        response = self.client.get(self.url + "?title=Health")
         self.assertEqual(response.status_code, 200)
         self.assertIn("newspapers", response.context)
         newspapers = response.context["newspapers"]
@@ -445,7 +577,7 @@ class NewspaperListViewTests(TestCase):
             Newspaper(title="Global Times", content="Content 2"),
             Newspaper(title="Tech Today", content="Content 3"),
         ])
-        response = self.client.get(reverse("catalog:newspaper-list") + "?title=")
+        response = self.client.get(self.url + "?title=")
         self.assertEqual(response.status_code, 200)
         self.assertIn("newspapers", response.context)
         newspapers = response.context["newspapers"]
@@ -456,7 +588,7 @@ class NewspaperListViewTests(TestCase):
             Newspaper(title=f"Newspaper {i}", content="Sample content") for i in range(14)
         ])
 
-        response = self.client.get(reverse("catalog:newspaper-list") + "?title=Newspaper&page=2")
+        response = self.client.get(self.url + "?title=Newspaper&page=2")
         self.assertEqual(response.status_code, 200)
         self.assertIn("newspapers", response.context)
         self.assertTrue(response.context["is_paginated"])
@@ -465,25 +597,38 @@ class NewspaperListViewTests(TestCase):
 
 
 class NewspaperCreateViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="strongpass123"
+        )
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:newspaper-create")
+
     def test_newspaper_create_view_status_code(self):
-        response = self.client.get(reverse("catalog:newspaper-create"))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
     
     def test_newspaper_create_view_template_used(self):
-        response = self.client.get(reverse("catalog:newspaper-create"))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/newspaper_form.html")
+
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
     
     def test_newspaper_create_view_post(self):
-        user = get_user_model().objects.create_user(username="publisher1", password="strongpass123")
         topic = Topic.objects.create(name="Sample Topic")
 
         data = {
             "title": "New Newspaper",
             "content": "This is the content of the newspaper.",
-            "publishers": [user.pk],
+            "publishers": [self.user.pk],
             "topics": [topic.pk],
         }
-        response = self.client.post(reverse("catalog:newspaper-create"), data)
+        response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Newspaper.objects.filter(title="New Newspaper").exists())
 
@@ -494,7 +639,7 @@ class NewspaperCreateViewTests(TestCase):
             "publishers": [],
             "topics": [],
         }
-        response = self.client.post(reverse("catalog:newspaper-create"), data)
+        response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context["form"], "title", "This field is required.")
         self.assertFalse(Newspaper.objects.filter(title="").exists())
@@ -506,18 +651,29 @@ class NewspaperUpdateViewTests(TestCase):
             title="Original Newspaper",
             content="Original content"
         )
-        self.user = get_user_model().objects.create_user(username="publisher1", password="strongpass123")
+        self.user = get_user_model().objects.create_user(
+            username="publisher1",
+            password="strongpass123"
+        )
         self.topic = Topic.objects.create(name="Sample Topic")
         self.newspaper.publishers.add(self.user)
         self.newspaper.topics.add(self.topic)
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:newspaper-update", args=[self.newspaper.pk])
     
     def test_newspaper_update_view_status_code(self):
-        response = self.client.get(reverse("catalog:newspaper-update", args=[self.newspaper.pk]))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
 
     def test_newspaper_update_view_template_used(self):
-        response = self.client.get(reverse("catalog:newspaper-update", args=[self.newspaper.pk]))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/newspaper_form.html")
+
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
     
     def test_newspaper_update_view_post(self):
         new_user = get_user_model().objects.create_user(username="publisher2", password="strongpass123")
@@ -529,7 +685,7 @@ class NewspaperUpdateViewTests(TestCase):
             "publishers": [new_user.pk],
             "topics": [new_topic.pk],
         }
-        response = self.client.post(reverse("catalog:newspaper-update", args=[self.newspaper.pk]), data)
+        response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 302)
         self.newspaper.refresh_from_db()
         self.assertEqual(self.newspaper.title, "Updated Newspaper")
@@ -544,7 +700,7 @@ class NewspaperUpdateViewTests(TestCase):
             "publishers": [],
             "topics": [],
         }
-        response = self.client.post(reverse("catalog:newspaper-update", args=[self.newspaper.pk]), data)
+        response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context["form"], "title", "This field is required.")
         self.newspaper.refresh_from_db()
@@ -557,17 +713,29 @@ class NewspaperDeleteViewTests(TestCase):
             title="Newspaper to be deleted",
             content="Content to be deleted"
         )
+        self.user = get_user_model().objects.create_user(
+            username="publisher1",
+            password="strongpass123"
+        )
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:newspaper-delete", args=[self.newspaper.pk])
     
     def test_newspaper_delete_view_status_code(self):
-        response = self.client.get(reverse("catalog:newspaper-delete", args=[self.newspaper.pk]))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
     
     def test_newspaper_delete_view_template_used(self):
-        response = self.client.get(reverse("catalog:newspaper-delete", args=[self.newspaper.pk]))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/newspaper_confirm_delete.html")
+
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
     
     def test_newspaper_delete_view_post(self):
-        response = self.client.post(reverse("catalog:newspaper-delete", args=[self.newspaper.pk]))
+        response = self.client.post(self.url)
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Newspaper.objects.filter(pk=self.newspaper.pk).exists())
 
@@ -578,20 +746,32 @@ class NewspaperDetailViewTests(TestCase):
             title="Sample Newspaper",
             content="Sample content"
         )
-        self.user = get_user_model().objects.create_user(username="publisher1", password="strongpass123")
+        self.user = get_user_model().objects.create_user(
+            username="publisher1", 
+            password="strongpass123"
+        )
         self.topic = Topic.objects.create(name="Sample Topic")
         self.newspaper.publishers.add(self.user)
         self.newspaper.topics.add(self.topic)
+        self.client.force_login(self.user)
+        self.url = reverse("catalog:newspaper-detail", args=[self.newspaper.pk])
     
     def test_newspaper_detail_view_status_code(self):
-        response = self.client.get(reverse("catalog:newspaper-detail", args=[self.newspaper.pk]))
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
     
     def test_newspaper_detail_view_template_used(self):
-        response = self.client.get(reverse("catalog:newspaper-detail", args=[self.newspaper.pk]))
+        response = self.client.get(self.url)
         self.assertTemplateUsed(response, "catalog/newspaper_detail.html")
     
     def test_newspaper_detail_view_context_data(self):
-        response = self.client.get(reverse("catalog:newspaper-detail", args=[self.newspaper.pk]))
+        response = self.client.get(self.url)
         self.assertIn("newspaper", response.context)
         self.assertEqual(response.context["newspaper"], self.newspaper)
+
+    def test_login_required(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)  
+        self.assertIn("/accounts/login/", response.url)
+    
