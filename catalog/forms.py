@@ -11,6 +11,7 @@ class RedactorCreateForm(UserCreationForm):
         fields = UserCreationForm.Meta.fields + (
             "first_name",
             "last_name",
+            "email",
             "years_of_experience",
         )
         widgets = {
@@ -31,6 +32,7 @@ class RedactorUpdateForm(forms.ModelForm):
             "username",
             "first_name",
             "last_name",
+            "email",
             "years_of_experience",
         ]
         widgets = {

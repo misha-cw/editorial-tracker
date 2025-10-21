@@ -17,13 +17,16 @@
           </div>
           <div>
             <h2 class="card-title mb-0">{{ redactor.username }}</h2>
-            <p class="small text-secondary mb-0">{{ redactor.get_full_name }}</p>
+            <p class="small text-secondary mb-0">{{ redactor.email }}</p>
           </div>
         </div>
         <!-- Meta: years of experience -->
-          <p class="mb-2">
-            <strong>Years of experience:</strong> {{ redactor.years_of_experience }}
-          </p>
+        <p class="mb-2">
+          <strong>Years of experience:</strong> {{ redactor.years_of_experience }}
+        </p>
+        <p class="mb-2">
+          <strong>Full name:</strong> {{ redactor.get_full_name }}
+        </p>
         <!-- Newspapers -->
         {% if redactor.newspapers.exists %}
           <hr>
@@ -48,7 +51,6 @@
         {% else %}
           <p class="text-muted mt-3">No newspapers assigned.</p>
         {% endif %}
-
       </div>
     </div>
   </div>
