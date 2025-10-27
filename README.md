@@ -21,6 +21,13 @@ pip install -r requirements.txt
 python manage.py runserver
 ```
 
+## Test User
+
+```
+login: user
+password: user12345
+```
+
 
 ## Demo
 
