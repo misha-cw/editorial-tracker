@@ -2,6 +2,10 @@
 
 A Django-based editorial tracking application.
 
+## Check it out!
+
+[Editorial project deployed on Render](https://editorial-tracker.onrender.com/)
+
 ## Features
 
 * Authentication functionality for Redactor/User
