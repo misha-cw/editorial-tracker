@@ -178,7 +178,7 @@ class TopicUpdateViewTests(TestCase):
         )
         self.client.force_login(self.user)
         self.topic = Topic.objects.create(name="Original Topic")
-        self.url = reverse("catalog:topic-update", args=[1])
+        self.url = reverse("catalog:topic-update", args=[self.topic.pk])
 
     def test_topic_update_view_status_code(self):
         response = self.client.get(self.url)
