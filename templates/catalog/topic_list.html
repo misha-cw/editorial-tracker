@@ -30,10 +30,12 @@
               <td>{{ forloop.counter }}</td>
               <td class="h6">{{ topic.name }}</td>
               <td class="text-end pe-3">
-                <a href="{% url 'catalog:topic-update' topic.pk %}"
-                   class="btn btn-sm btn-secondary">Edit</a>
-                <a href="{% url 'catalog:topic-delete' topic.pk %}"
-                   class="btn btn-sm btn-danger">Delete</a>
+                <div class="btn-group">
+                  <a href="{% url 'catalog:topic-update' topic.pk %}"
+                  class="btn btn-sm btn-secondary">Edit</a>
+                  <a href="{% url 'catalog:topic-delete' topic.pk %}"
+                  class="btn btn-sm btn-danger">Delete</a>
+                </div>
               </td>
             </tr>
           {% empty %}
